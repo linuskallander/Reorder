@@ -1,0 +1,46 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="reorder-contacts-add.html">
+<link rel="import" href="reorder-contacts-list.html">
+<!-- <link rel="import" href="reorder-inventory-list.html"> -->
+
+
+<dom-module id="reorder-contacts">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+
+    <div class="card">
+      <reorder-contacts-list account="{{account}}"></reorder-contacts-list>
+    </div>
+
+    <div class="card">
+      <reorder-contacts-add account="{{account}}"></reorder-contacts-add>
+    </div>
+  </template>
+
+  <script>
+    class ReorderContacts extends Polymer.Element {
+      static get is() { return 'reorder-contacts'; }
+      static get properties() {
+        return {
+          account:{
+            type: Object
+          }
+        }
+      }
+
+
+
+    }
+
+    window.customElements.define(ReorderContacts.is, ReorderContacts);
+  </script>
+</dom-module>

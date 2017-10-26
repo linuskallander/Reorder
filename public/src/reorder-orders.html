@@ -1,0 +1,61 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="reorder-orders-add.html">
+<link rel="import" href="reorder-orders-list.html">
+<!-- <link rel="import" href="reorder-inventory-list.html"> -->
+
+
+<dom-module id="reorder-orders">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+
+    <app-route route="{{route}}"
+                  pattern="/add"
+                  active="{{addActive}}"></app-route>
+
+
+
+      <reorder-orders-list account="{{account}}" active="{{listActive}}"></reorder-orders-list>
+
+
+      <reorder-orders-add account="{{account}}" active="{{addActive}}"></reorder-orders-add>
+
+  </template>
+
+  <script>
+    class ReorderOrders extends Polymer.Element {
+      static get is() { return 'reorder-orders'; }
+      static get properties() {
+        return {
+          account:{
+            type: Object
+          },
+          addActive: {
+            type: Boolean,
+            observer: '_subChanged',
+            notify: true
+          },
+          listActive: {
+            type: Boolean,
+            notify: true
+          },
+        }
+      }
+      _subChanged(){
+        if (this.addActive) {this.set('listActive',false)}else{this.set('listActive',true);}
+      }
+
+    }
+
+    window.customElements.define(ReorderOrders.is, ReorderOrders);
+  </script>
+</dom-module>

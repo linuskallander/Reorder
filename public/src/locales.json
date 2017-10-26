@@ -1,0 +1,10 @@
+{
+  "en": {
+    "settings.header.accounts": "Accounts",
+    "inventory.add.button.add": "Add",
+  },
+  "sv": {
+    "settings.header.accounts": "Konton",
+    "inventory.add.button.add": "Lägg till",
+  }
+}

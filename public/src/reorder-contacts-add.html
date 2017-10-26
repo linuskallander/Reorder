@@ -1,0 +1,242 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<!-- <link rel="import" href="../bower_components/address-autocomplete/address-autocomplete.html"> -->
+
+<dom-module id="reorder-contacts-add">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 10px;
+      }
+      #create {
+        width: 100%;
+      }
+
+
+    </style>
+
+    <div class="card">
+      <firebase-auth user="{{user}}" ></firebase-auth>
+      <!-- <firebase-query
+        id="query"
+        path="/inventory/{{account.aid}}"
+        data="{{data}}">
+        </firebase-query> -->
+      <h1> Add contact</h1>
+      <div id="inventory" hidden$="{{!user}}">
+
+
+        <paper-input id="name" label="Name" value="{{name}}"></paper-input>
+        <paper-toggle-button name="individual">Is this an individual?</paper-toggle-button>
+        <paper-input id="phone" label="Phone"></paper-input>
+        <paper-input id="email" label="E-mail"></paper-input>
+        <paper-input id="reference" label="Invoice reference"></paper-input>
+        <h2>Delivery address</h2>
+         <address-autocomplete></address-autocomplete>
+        <paper-input id="deliveryRecipient" label="Recipient" value="[[name]]"></paper-input>
+        <paper-input id="deliveryAddress1" label="Address 1"></paper-input>
+        <paper-input id="deliveryAddress2" label="Address 2"></paper-input>
+        <paper-input id="deliveryZip" label="Zip code"></paper-input>
+        <paper-input id="deliveryCity" label="city"></paper-input>
+        <paper-input id="deliveryCountry" label="Country"></paper-input>
+        <h2>Invoice address</h2>
+         <address-autocomplete></address-autocomplete>
+        <paper-input id="invoiceRecipient" label="Recipient" value="[[name]]"></paper-input>
+        <paper-input id="invoiceAddress1" label="Address 1"></paper-input>
+        <paper-input id="invoiceAddress2" label="Address 2"></paper-input>
+        <paper-input id="invoiceZip" label="Zip code"></paper-input>
+        <paper-input id="invoiceCity" label="city"></paper-input>
+        <paper-input id="invoiceCountry" label="Country"></paper-input>
+        <h2>Advanced</h2>
+        <paper-input id="personName" label="Name"></paper-input>
+        <paper-input id="personPhone" label="Phone"></paper-input>
+        <paper-input id="personEmail" label="E-mail"></paper-input>
+        <paper-input id="personReference" label="Invoice reference"></paper-input>
+        <paper-input id="emailInvoice" label="E-mail"></paper-input>
+
+        <paper-toggle-button name="VAT">Display prices with VAT.</paper-toggle-button>
+        <paper-input id="currency" label="Currency"></paper-input>
+
+        <div id="notes-controls">
+          <paper-button raised id="add" on-tap="add">Add</paper-button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+
+
+    // Define the element's API using an ES2015 class
+     class ReorderContactsAdd extends Polymer.Element {
+
+       static get is() { return 'reorder-contacts-add'; }
+
+       // Declare properties for the element's public API
+       static get properties() {
+         return {
+          data: {
+             type: Object
+           },
+           user: {
+             type: Object,
+             observer: '_userChanged',
+             notify: true
+           },
+           account:{
+               type: Object
+             }
+
+         }
+       }
+
+       ready(){
+        super.ready();
+
+       }
+
+      // Setup user ref in firebase if auth succeeds
+      _userChanged(user) {
+        if (user) {
+
+          };
+
+        }
+
+       add(e) {
+
+         var newContactKey = firebase.database().ref('contacts/' + this.account.aid).push().key;
+         var updates  = {};
+
+         if(this.$.name.value){
+           updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/name/displayName'] = this.$.name.value;
+           this.$.name.value="";};
+         if(this.$.phone.value){
+           updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/phone'] = this.$.phone.value;
+           this.$.phone.value="";};
+
+         if(this.$.email.value || this.$.emailInvoice.value ){
+           if(this.$.email.value){
+             updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/contact'] = this.$.email.value;
+             this.$.email.value="";};
+           if(this.$.emailInvoice.value){
+             updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/invoice'] = this.$.emailInvoice.value;
+             this.$.emailInvoice.value="";};
+         };
+
+         if(this.$.deliveryRecipient.value ||
+            this.$.deliveryAddress1.value ||
+            this.$.deliveryAddress2.value ||
+            this.$.deliveryZip.value ||
+            this.$.deliveryCity.value ||
+            this.$.deliveryCountry.value ){
+             if(this.$.deliveryRecipient.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/delivery/recipient'] = this.$.deliveryRecipient.value;
+              this.$.deliveryRecipient.value="";};
+             if(this.$.deliveryAddress1.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/delivery/address1'] = this.$.deliveryAddress1.value;
+               this.$.deliveryAddress1.value="";};
+             if(this.$.deliveryAddress2.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/delivery/address2'] = this.$.deliveryAddress2.value;
+               this.$.deliveryAddress2.value="";};
+             if(this.$.deliveryZip.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/delivery/zip'] = this.$.deliveryZip.value;
+               this.$.deliveryZip.value="";};
+             if(this.$.deliveryCity.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/delivery/city'] = this.$.deliveryCity.value;
+               this.$.deliveryCity.value="";};
+             if(this.$.deliveryCountry.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/delivery/country'] = this.$.deliveryCountry.value;
+               this.$.deliveryCountry.value="";};
+         };
+
+        if(this.$.invoiceRecipient.value ||
+           this.$.invoiceAddress1.value ||
+           this.$.invoiceAddress2.value ||
+           this.$.invoiceZip.value ||
+           this.$.invoiceCity.value ||
+           this.$.invoiceCountry.value ){
+            if(this.$.invoiceRecipient.value){
+              updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/invoice/recipient'] = this.$.invoiceRecipient.value;
+             this.$.invoiceRecipient.value="";};
+            if(this.$.invoiceAddress1.value){
+              updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/invoice/address1'] = this.$.invoiceAddress1.value;
+             this.$.invoiceAddress1.value="";};
+            if(this.$.invoiceAddress2.value){
+              updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/invoice/address2'] = this.$.invoiceAddress2.value;
+             this.$.invoiceAddress2.value="";};
+            if(this.$.invoiceZip.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/invoice/zip'] = this.$.invoiceZip.value;
+               this.$.invoiceZip.value="";};
+            if(this.$.invoiceCity.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/invoice/city'] = this.$.invoiceCity.value;
+               this.$.invoiceCity.value="";};
+            if(this.$.invoiceCountry.value){
+               updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/invoice/country'] = this.$.invoiceCountry.value;
+               this.$.invoiceCountry.value="";};
+
+        };
+
+        if(this.$.currency.value){updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = this.$.currency.value;}else
+        {updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = 'SEK';};
+        updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/meta'] = {createDate: Date.now(), createUid: this.user.uid };
+
+
+
+        // add individual
+        var newPersonKey = firebase.database().ref('contacts/' + this.account.aid + '/' + newContactKey + '/people').push().key;
+        var updateIndividual = {};
+
+        if(this.$.personName.value ||
+           this.$.personEmail.value ||
+           this.$.personPhone.value ||
+           this.$.personReference.value ){
+             if(this.$.personName.value){
+               updateIndividual['/contacts/'+ this.account.aid + '/' + newContactKey + '/people/' + newPersonKey +'/name/displayName'] = this.$.personName.value;
+               this.$.personName.value="";};
+             if(this.$.personEmail.value){
+               updateIndividual['/contacts/'+ this.account.aid + '/' + newContactKey + '/people/' + newPersonKey +'/email'] = this.$.personEmail.value;
+             this.$.personEmail.value="";};
+             if(this.$.personPhone.value){
+               updateIndividual['/contacts/'+ this.account.aid + '/' + newContactKey + '/people/' + newPersonKey +'/phone'] = this.$.personPhone.value;
+             this.$.personPhone.value="";};
+             if(this.$.personReference.value){
+               updateIndividual['/contacts/'+ this.account.aid + '/' + newContactKey + '/people/' + newPersonKey +'/reference'] = this.$.personReference.value;
+              this.$.personReference.value="";};
+          };
+
+       this.$.reference.value="";
+       //execute updates
+       firebase.database().ref().update(updates);
+       firebase.database().ref().update(updateIndividual);
+
+       }
+
+
+     }
+
+     // Register the x-custom element with the browser
+     customElements.define(ReorderContactsAdd.is, ReorderContactsAdd);
+  </script>
+
+</dom-module>

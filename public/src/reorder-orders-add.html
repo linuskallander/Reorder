@@ -1,0 +1,521 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<!-- <link rel="import" href="../bower_components/paper-locale-input/paper-locale-input.html"> -->
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-column.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-sorter.html">
+<link rel="import" href="../bower_components/app-datepicker/app-datepicker.html">
+<link rel="import" href="../bower_components/app-datepicker/app-datepicker-dialog.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="shared-styles.html">
+
+<script src="../bower_components/intl/dist/Intl.js"></script>
+<script src="../bower_components/intl/locale-data/jsonp/en.js"></script>
+<script src="../bower_components/intl/locale-data/jsonp/sv.js"></script>
+<!-- <link rel="import" href="../bower_components/address-autocomplete/address-autocomplete.html"> -->
+
+<dom-module id="reorder-orders-add">
+  <template>
+    <style>
+      :host {
+      display: none;
+      }
+      :host([active]) {
+        display: block;
+        padding: 10px;
+      }
+      paper-card {
+        width: 100%;
+      }
+      #datepicker{
+        max-width:512px;
+      }
+      a paper-button,
+      a:active paper-button,
+      a:visited paper-button {
+        color: #000;
+        text-decoration: none;
+      }
+      input[readonly] {
+        border: 2px solid transparent;
+      }
+
+      input {
+        font: inherit;
+      }
+      input.orderrow-input {
+        max-width: 50px;
+      }
+    </style>
+
+      <firebase-auth user="{{user}}" ></firebase-auth>
+      <firebase-query
+        id="query"
+        path="/contacts/{{account.aid}}"
+        data="{{data}}">
+        </firebase-query>
+      <firebase-query
+        id="query"
+        path="/temporaryOrderItems/{{account.aid}}/{{user.uid}}"
+        data="{{tempData}}">
+        </firebase-query>
+      <firebase-query
+        id="query"
+        path="/inventory/{{account.aid}}"
+        data="{{inventoryData}}">
+        </firebase-query>
+      <firebase-query
+        id="query"
+        path="/itemVariants/{{account.aid}}"
+        data="{{inventoryVariants}}">
+        </firebase-query>
+    <paper-card heading="Order details">
+      <div id="order" hidden$="{{!user}}" class="card-content">
+
+        <paper-dropdown-menu label="Customer" id="customer">
+          <paper-listbox slot="dropdown-content" selected="0" value="{{selectedSeller}}">
+            <template is="dom-repeat" items="{{data}}" as="contact">
+
+              <paper-item value="[[contact.$key]]" label="[[contact.name.displayName]]">[[contact.name.displayName]]</paper-item>
+
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+        <br>
+        <paper-card id="datepicker">
+        <app-datepicker
+          first-day-of-week="1"
+          locale="sv"
+          class="light-theme"></app-datepicker></paper-card>
+        <paper-input id="customerOrderNr" label="Customers order number"></paper-input>
+        <paper-input id="reference" label="Reference"></paper-input>
+        <paper-input id="note" label="Note"></paper-input>
+
+        Order from commissioner <paper-toggle-button id="commission"></paper-toggle-button>
+        <div>
+          Display prices with VAT included <paper-toggle-button id="includeVAT" on-change="_VATChange"></paper-toggle-button>
+        </div>
+
+        <vaadin-grid items='[[orderContent]]' id="orderRows">
+          <vaadin-grid-column>
+            <template class="header">Product</template>
+            <template>[[item.name]] <br />
+                [[item.id]]
+            </template>
+
+          </vaadin-grid-column>
+          <vaadin-grid-column>
+            <template class="header">Quantity</template>
+            <template>
+
+              <div style="display: flex">
+                <div>
+
+                  <input class="orderrow-input" id="quantity-[[index]]" value="[[item.quantity]]" on-input="_storeQuantity" readonly$="[[!_isEditing(editing, item)]]">
+
+                </div>
+                <div>
+                  <paper-icon-button id="lessItemsButton-[[index]]" icon="arrow-drop-down" on-click="_lessItems" disabeled$="{{zeroed}}"></paper-icon-button>
+                  <paper-icon-button icon="arrow-drop-up" on-click="_moreItems"></paper-icon-button>
+
+                </div>
+              </div>
+            </template>
+          </vaadin-grid-column>
+          <vaadin-grid-column>
+            <template class="header">Price</template>
+            <template>
+              <input type="text" name="price-[[index]]" value="[[item.displayPrice]]" on-input="_storePrice" readonly$="[[!_isEditing(editing,item)]]"> {{totals.includeExcludeVAT}} [[item.vat]]% VAT.
+              <!-- <paper-locale-input type="text" name="price-[[index]]" value="[[item.displayPrice]]" on-input="_storePrice" readonly$="[[!_isEditing(editing,item)]]" currency="sek" locale="se"></paper-locale-input> {{totals.includeExcludeVAT}} [[item.vat]]% VAT. -->
+            </template>
+          </vaadin-grid-column>
+          <!-- <vaadin-grid-column>
+            <template class="header">Discount</template>
+            <template></template>
+          </vaadin-grid-column> -->
+          <vaadin-grid-column>
+            <template class="header">Actions</template>
+            <template>
+
+              <div style="display: flex">
+                <paper-icon-button icon="delete" hidden="[[editing]]" on-click="_remove"></paper-icon-button>
+                <paper-icon-button icon="create"  hidden="[[editing]]" on-click="_edit" focus-target$="[[!editing]]">Edit</paper-icon-button>
+                <paper-icon-button icon="done"  hidden="[[!_isEditing(editing, item)]]" on-click="_save" focus-target$="[[editing]]">Save</paper-icon-button>
+                <paper-icon-button icon="cancel"  hidden="[[!_isEditing(editing, item)]]" on-click="_cancel">Cancel</paper-icon-button>
+              </div>
+            </template>
+          </vaadin-grid-column>
+        </vaadin-grid>
+        <strong>Total weight: </strong>{{totals.weight}} kg, <strong> Total price: </strong>{{totals.price}} kr {{totals.includeExcludeVAT}} VAT.
+
+      <!-- list items and variants -->
+      <paper-listbox>
+          <template is="dom-repeat" items="[[inventoryData]]" as="item">
+            <!-- paper-item to show if inventory item has no variants.-->
+            <template is="dom-if" if="{{!item.hasVariants}}" restamp="true">
+              <paper-item on-tap="addToBasket" value="[[itemVar.id]]">
+                <paper-item-body two-lines>
+                    [[item.name]]
+                  <div secondary>
+                      [[item.price]] kr
+                  </div>
+                </paper-item-body>
+              </paper-item>
+            </template>
+            <!-- Paper-item to show if inventory item has variants -->
+            <template is="dom-if" if="{{item.hasVariants}}" >
+              <paper-item on-tap="displayVariants" data-item$="[[item.$key]]"  value="[[item.$key]]">
+                <paper-item-body two-lines>
+
+                    [[item.name]]
+
+                  <div secondary>
+                      This item has multiple variants. Click to display.
+                      <iron-collapse id="[[item.$key]]">
+                        <!-- display variants -->
+                        <paper-listbox>
+                          <template is="dom-repeat" items="{{inventoryVariants}}" as="itemVar">
+                              <template is="dom-if" if="{{_isEqualTo(item.$key, itemVar.item)}}" restamp="true">
+                               <paper-item on-tap="addToBasket" value="[[itemVar.id]]">
+                                 <paper-item-body two-lines>
+                                 [[itemVar.name]]
+                                <div secondary>
+                                  [[itemVar.price]] kr
+                                </div>
+                                </paper-item-body>
+                               </paper-item>
+                              </template>
+                         </template>
+                       </paper-listbox>
+                    </iron-collapse>
+                  </div>
+                </paper-item-body>
+              </paper-item>
+            </template>
+          </template>
+        </paper-listbox>
+
+      </div>
+      <div class="card-actions">
+        <paper-button id="add" on-tap="add">Add</paper-button>
+        <a href="[[rootPath]]#/orders" tabindex="-1"><paper-button>Cancel</paper-button></a>
+      </div>
+
+    </paper-card>
+  </template>
+
+  <script>
+
+
+    // Define the element's API using an ES2015 class
+     class ReorderOrdersAdd extends Polymer.Element {
+
+       static get is() { return 'reorder-orders-add'; }
+
+       // Declare properties for the element's public API
+       static get properties() {
+         return {
+          data: {
+             type: Object
+           },
+           user: {
+             type: Object,
+             observer: '_userChanged',
+             notify: true
+           },
+           account:{
+               type: Object
+             },
+
+           active: {
+             type: Boolean,
+             value: false,
+             reflectToAttribute: true
+           },
+           orderContent:{
+             type:Array,
+             value:[]
+
+           },
+          editing: {
+            type: Object,
+            value: null,
+          },
+          totals:{
+            type:Object,
+            value:{
+              weight:0,
+              price:0,
+              includeExcludeVAT: 'excluding'
+            },
+            notify:true
+          }
+
+         }
+       }
+
+       ready(){
+        super.ready();
+        this.editing = null;
+       }
+      _isEqualTo(item, variant) {
+          // console.log(item);
+          // console.log(variant);
+          return item == variant;
+        }
+      // Setup user ref in firebase if auth succeeds
+      _userChanged(user) {
+        if (user) {
+
+          };
+
+        }
+
+      _VATChange(e){
+        // börja med att spara eventuell rad som redigeras.
+
+
+        if (this.$.includeVAT.checked) {
+          for (var i = 0; i < this.orderContent.length; i++) {
+            this.orderContent[i].displayPrice = this.orderContent[i].price * (1 + this.orderContent[i].vat/100);
+
+          }
+          this.set('totals.includeExcludeVAT','including')
+        } else {
+          for (var i = 0; i < this.orderContent.length; i++) {
+            this.orderContent[i].displayPrice = this.orderContent[i].price;
+          }
+          this.set('totals.includeExcludeVAT','excluding')
+        }
+          this._sumTotals();
+          this.$.orderRows.clearCache();
+      }
+
+      _storeQuantity(e) {
+        this._quantity = parseInt(e.target.value);
+      }
+
+      _storePrice(e){
+        this._price = parseInt(e.target.value);
+      }
+
+      _lessItems(e){
+        if(e.model.item.quantity>1){
+          e.model.item.quantity-=1;
+          this.$.orderRows.clearCache();
+        }
+        else{
+          console.log("cannot remove items below 1. Remove instead.");
+        }
+
+        this._sumTotals();
+      }
+
+      _moreItems(e){
+        e.model.item.quantity+=1;
+        this.$.orderRows.clearCache();
+        this._sumTotals();
+
+      }
+      _isEditing(editing, item) {
+        return item === editing;
+      }
+
+      _edit(e) {
+        var item = e.model.item;
+        // console.log(item);
+        this.editing = item;
+
+        this._quantity = item.quantity;
+        this._price = item.price;
+
+        requestAnimationFrame(() => this.$.orderRows.querySelector('#quantity-' + e.model.index).focus());
+      }
+      _save(e) {
+        var item = e.model.item;
+        item.quantity = this._quantity;
+        item.displayPrice = this._price;
+        if (this.$.includeVAT.checked) {
+          item.price = this._price / (1+item.vat/100);
+        }
+        else{
+            item.price = this._price;
+        }
+        this.editing = null;
+
+        this.$.orderRows.clearCache();
+        this._sumTotals();
+      }
+
+      _cancel() {
+        this.editing = null;
+
+        this.$.orderRows.clearCache();
+      }
+
+
+
+      displayVariants(e){
+        var div = Polymer.dom(e).rootTarget;
+        div.querySelector('iron-collapse').toggle();
+      }
+
+      addToBasket(e){
+        if(e.model.item.hasVariants){
+          var id = e.model.itemVar.id;
+          var name = e.model.itemVar.name;
+          var price = parseInt(e.model.itemVar.price);
+          var weight = e.model.itemVar.weight;
+          if (e.model.itemVar.vat) {
+            var vat = parseInt(e.model.itemVar.vat);
+          } else {
+            var vat = 0;
+          }
+        } else {
+          var id = e.model.item.id;
+          var name = e.model.item.name;
+          var price = parseInt(e.model.item.price);
+          var weight = e.model.item.weight;
+
+          if (e.model.item.vat) {
+            var vat = parseInt(e.model.item.vat);
+          } else {
+            var vat = 0;
+          }
+        }
+        //console.log(this.$.includeVAT.checked);
+        if (this.$.includeVAT.checked) {
+            var displayPrice = price * (1+vat/100);
+        } else {
+            var displayPrice = price;
+        }
+
+        this.orderContent.unshift({'id':id,'name':name,'price':price,'displayPrice':displayPrice, 'vat':vat, 'quantity':Number(1),'weight':weight});
+        this.$.orderRows.clearCache();
+        // console.log(this.orderContent);
+
+        this._sumTotals();
+        }
+
+      _sumTotals(){
+        this.totals.weight = 0;
+        this.totals.price = 0;
+        if(this.orderContent.length==0){
+          this.set('totals.weight', '0');
+          this.set('totals.price', '0');
+        }
+        else {
+          for (var i = 0; i < this.orderContent.length; i++) {
+            var quantity = this.orderContent[i].quantity
+              this.set('totals.weight', this.totals.weight + (this.orderContent[i].weight/1000) * quantity);
+              this.set('totals.price', this.totals.price + this.orderContent[i].displayPrice * quantity);
+
+          }
+        };
+      }
+
+      _remove(e) {
+          var index = this.orderContent.indexOf(e.model.item);
+          this.orderContent.splice(index, 1);
+
+          this.$.orderRows.clearCache();
+          this._sumTotals();
+        }
+
+       add(e) {
+
+         var newOrderKey = firebase.database().ref('orders/' + this.account.aid).push().key;
+         var orderLocation = '/contacts/'+ this.account.aid + '/' + newContactKey ;
+         var updates  = {};
+
+         // Prepare
+         // NOTE:order number, _customer, date, _order number, _reference, _note, _comissioner true/false, _creator id, _creator name, _create timestamp, include VAT, total value, total weight,
+
+         // NOTE: OrderRow:
+        //  orderKey, id, name, unit price, vat, quantity, quantity in delivery, commission true/false
+         updates[orderLocation + '/orderNumber'] = "X";
+         updates[orderLocation + '/creatorId'] = this.user.uid;
+         updates[orderLocation + '/creatorName'] = this.user.name;
+         updates[orderLocation + '/createTimestamp'] = Date.now();
+
+         if(this.$.customer.value){
+           updates[orderLocation + '/customer'] = this.$.customer.value;
+           };
+         if(this.$.customerOrderNr.value){
+           updates[orderLocation + '/customerOrderNr'] = this.$.customerOrderNr.value;
+           this.$.customerOrderNr.value="";};
+         if(this.$.reference.value){
+           updates[orderLocation + '/reference'] = this.$.reference.value;
+           this.$.reference.value="";};
+         if(this.$.note.value){
+           updates[orderLocation + '/note'] = this.$.note.value;
+           this.$.note.value="";};
+         if(this.$.commission.selectedItem.value){
+           updates[orderLocation + '/commission'] = this.$.commission.selectedItem.value;
+           this.$.commission.selectedItem.value="false";};
+
+        //  if(this.$.email.value || this.$.emailInvoice.value ){
+        //    if(this.$.email.value){
+        //      updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/contact'] = this.$.email.value;
+        //      this.$.email.value="";};
+        //    if(this.$.emailInvoice.value){
+        //      updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/invoice'] = this.$.emailInvoice.value;
+        //      this.$.emailInvoice.value="";};
+        //  };
+
+
+
+        // if(this.$.currency.value){updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = this.$.currency.value;}else
+        // {updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = 'SEK';};
+        // updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/meta'] = {createDate: Date.now(), createUid: this.user.uid };
+
+
+
+        // add individual
+        var newPersonKey = firebase.database().ref('contacts/' + this.account.aid + '/' + newContactKey + '/people').push().key;
+        var updateIndividual = {};
+
+
+
+       this.$.reference.value="";
+       //execute updates
+       firebase.database().ref().update(updates);
+       firebase.database().ref().update(updateIndividual);
+
+       }
+
+
+     }
+
+     // Register the x-custom element with the browser
+     customElements.define(ReorderOrdersAdd.is, ReorderOrdersAdd);
+  </script>
+
+</dom-module>
