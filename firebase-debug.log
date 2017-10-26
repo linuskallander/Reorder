@@ -1,0 +1,36 @@
+[debug] [2017-10-26T13:52:42.783Z] ----------------------------------------------------------------------
+[debug] [2017-10-26T13:52:42.785Z] Command:       /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] [2017-10-26T13:52:42.785Z] CLI Version:   3.13.1
+[debug] [2017-10-26T13:52:42.786Z] Platform:      darwin
+[debug] [2017-10-26T13:52:42.786Z] Node Version:  v6.11.2
+[debug] [2017-10-26T13:52:42.787Z] Time:          Thu Oct 26 2017 15:52:42 GMT+0200 (CEST)
+[debug] [2017-10-26T13:52:42.787Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2017-10-26T13:52:42.806Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2017-10-26T13:52:42.806Z] > authorizing via signed-in user
+[debug] [2017-10-26T13:52:42.808Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2017-10-26T13:52:42.808Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/2y8CXnucSYAwJCHuXBqTnx41rlI57vF-eNkj156Gpc4',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Thu Oct 26 2017 15:52:42 GMT+0200 (CEST)
+[debug] [2017-10-26T13:52:43.649Z] <<< HTTP RESPONSE 200
+[debug] [2017-10-26T13:52:43.663Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/reorder-cf94c  
+ Thu Oct 26 2017 15:52:43 GMT+0200 (CEST)
+[debug] [2017-10-26T13:52:45.604Z] <<< HTTP RESPONSE 200
+[debug] [2017-10-26T13:52:45.605Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/reorder-cf94c/tokens  
+ Thu Oct 26 2017 15:52:45 GMT+0200 (CEST)
+[debug] [2017-10-26T13:52:46.975Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/Users/loonis/Documents/webbprojekt/reorder'...
+[info] 
+[debug] [2017-10-26T13:52:46.978Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/reorder-cf94c  
+ Thu Oct 26 2017 15:52:46 GMT+0200 (CEST)
+[debug] [2017-10-26T13:52:49.738Z] <<< HTTP RESPONSE 200
+[debug] [2017-10-26T13:52:49.738Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/543531210958/clients/_:getWebAppConfig  
+ Thu Oct 26 2017 15:52:49 GMT+0200 (CEST)
+[debug] [2017-10-26T13:52:50.975Z] <<< HTTP RESPONSE 200
+[info] i  hosting: Serving hosting files from: public
+[info] ✔  hosting: Local server: http://localhost:5000
+

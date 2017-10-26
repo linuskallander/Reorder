@@ -1,0 +1,48 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/reorder-app.html",
+  "fragments": [
+    "src/reorder-view1.html",
+    "src/reorder-view2.html",
+    "src/reorder-settings.html",
+    "src/reorder-view404.html",
+    "src/reorder-login.html",
+    "src/reorder-notes.html",
+    "src/reorder-user-settings.html",
+    "src/reorder-account-settings.html",
+    "src/reorder-inventory.html",
+    "src/reorder-add-product.html",
+    "src/reorder-inventory-list.html",
+    "src/reorder-orders.html",
+    "src/reorder-orders-add.html",
+    "src/reorder-orders-list.html",
+
+    "src/reorder-contacts.html",
+    "src/reorder-contacts-add.html",
+    "src/reorder-contacts-list.html",
+
+  ],
+  "sources": [
+    "src/**/*",
+    "images/**/*",
+    "bower.json"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/*.js"
+  ],
+  "lint": {
+    "rules": ["polymer-2"]
+  },
+  "builds": [
+    {
+      "preset": "es5-bundled"
+    },
+    {
+      "preset": "es6-bundled"
+    },
+    {
+      "preset": "es6-unbundled"
+    }
+  ]
+}

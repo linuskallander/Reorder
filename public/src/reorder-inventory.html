@@ -1,0 +1,45 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="reorder-add-product.html">
+<link rel="import" href="reorder-inventory-list.html">
+
+
+<dom-module id="reorder-inventory">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+
+    <div class="card">
+      <reorder-inventory-list account="{{account}}"></reorder-inventory-list>
+    </div>
+
+    <div class="card">
+      <reorder-add-product account="{{account}}"></reorder-add-product>
+    </div>
+  </template>
+
+  <script>
+    class ReorderInventory extends Polymer.Element {
+      static get is() { return 'reorder-inventory'; }
+      static get properties() {
+        return {
+          account:{
+            type: Object
+          }
+        }
+      }
+
+
+
+    }
+
+    window.customElements.define(ReorderInventory.is, ReorderInventory);
+  </script>
+</dom-module>

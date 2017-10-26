@@ -1,0 +1,85 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<dom-module id="reorder-user-settings">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 10px;
+      }
+      #create {
+        width: 100%;
+      }
+      #notes-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      #notes-list li {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+      }
+      #notes-list .content {
+        @apply(--layout-flex);
+        padding: 8px;
+      }
+      #notes-controls {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+    </style>
+
+    <div class="card">
+      <firebase-auth user="{{user}}"></firebase-auth>
+      <firebase-query
+        id="query"
+        path="/users/[[user.uid]]"
+        start-at="settings"
+        end-at="settings"
+        data="{{data}}">
+      </firebase-query>
+
+      <div id="settings" hidden$="[[!user]]">
+      <template is="dom-repeat" items="{{data}}" as="setting">
+           <paper-input id="setName" label="Name" value="{{setting.name}}"></paper-input>
+           <paper-input id="setEmail" label="Email" value="{{setting.email}}"></paper-input>
+           <paper-input id="setPhone" label="Phone" value="{{setting.phone}}"></paper-input>
+           <paper-input id="setPhoto" label="Photo" value="{{setting.photo}}"></paper-input>
+      </template>
+
+      </div>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'reorder-user-settings',
+      properties: {
+        data: {
+          type: Object
+        }
+      }
+
+
+    });
+  </script>
+</dom-module>
