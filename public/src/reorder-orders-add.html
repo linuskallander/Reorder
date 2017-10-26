@@ -236,7 +236,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       </div>
       <div class="card-actions">
-        <paper-button id="add" on-tap="add">Add</paper-button>
+        <paper-button id="save" on-tap="saveOrder">Save</paper-button>
         <a href="[[rootPath]]#/orders" tabindex="-1"><paper-button>Cancel</paper-button></a>
       </div>
 
@@ -288,6 +288,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               includeExcludeVAT: 'excl.'
             },
             notify:true
+          },
+          orderKey:{
+            type: String,
+
+          },
+          removedItems:{
+            type: Array,
+            value: []
+          },
+          saved:{
+            type: Object,
+            value: null
           }
 
          }
@@ -297,7 +309,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         super.ready();
         this.editing = null;
 
-        var newOrderKey = firebase.database().ref('orders/' + this.account.aid).push().key;
+        this.set('orderKey', firebase.database().ref('orders/' + this.account.aid).push().key);
        }
       _isEqualTo(item, variant) {
           // console.log(item);
@@ -432,7 +444,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         var rowKey = firebase.database().ref('orderRows/' + this.account.aid).push().key;
 
-        this.orderContent.unshift({'id':id,'name':name,'price':price,'displayPrice':displayPrice, 'vat':vat, 'quantity':Number(1),'weight':weight});
+        this.orderContent.unshift({'rowKey':rowKey,'id':id,'name':name,'price':price,'displayPrice':displayPrice, 'vat':vat, 'quantity':Number(1),'weight':weight});
         this.$.orderRows.clearCache();
         // console.log(this.orderContent);
 
@@ -450,38 +462,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         else {
           for (var i = 0; i < this.orderContent.length; i++) {
             var quantity = this.orderContent[i].quantity
-              this.set('totals.weight', this.totals.weight + (this.orderContent[i].weight/1000) * quantity);
+              this.set('totals.weight', Math.round((this.totals.weight + (this.orderContent[i].weight/1000) * quantity)*100)/100);
               this.set('totals.displayPrice', this.totals.displayPrice + this.orderContent[i].displayPrice * quantity);
               this.set('totals.price', this.totals.price + this.orderContent[i].price * quantity);
+
           }
         };
       }
 
       _remove(e) {
           var index = this.orderContent.indexOf(e.model.item);
+            console.log(this.orderContent.indexOf(e.model.item));
+            //NOTE: Jag lyckas inte hämta RowKey.... 
+          if (this.saved) {
+            this.removedItems.push({'rowKey':this.orderContent.rowKey});
+          }
           this.orderContent.splice(index, 1);
 
           this.$.orderRows.clearCache();
           this._sumTotals();
+
+
         }
 
-       add(e) {
+       saveOrder(e) {
 
 
-         var orderLocation = '/contacts/'+ this.account.aid + '/' + newContactKey ;
+         var orderLocation = '/orders/'+ this.account.aid + '/' + this.orderKey ;
          var updateOrder  = {};
 
          // Prepare
          // NOTE:order number, _customer, date, _order number, _reference, _note, _comissioner true/false, _creator id, _creator name, _create timestamp, include VAT, total value, total weight,
          // orderNumber still missing.
-         // NOTE: OrderRow:
-        //  orderKey, id, name, unit price, vat, quantity, quantity in delivery, commission true/false
-         updates[orderLocation + '/orderNumber'] = "X";
-         updates[orderLocation + '/creatorId'] = this.user.uid;
-         updates[orderLocation + '/creatorName'] = this.user.name;
-         updates[orderLocation + '/createTimestamp'] = Date.now();
-         updates[orderLocation + '/totalValue'] = this.totals.price;
-         updates[orderLocation + '/totalWeight'] = this.totals.weight;
+         updateOrder[orderLocation + '/orderNumber'] = "X";
+         updateOrder[orderLocation + '/creatorId'] = this.user.uid;
+         updateOrder[orderLocation + '/creatorName'] = this.user.displayName;
+         updateOrder[orderLocation + '/createTimestamp'] = Date.now();
+         updateOrder[orderLocation + '/totalValue'] = this.totals.price;
+         updateOrder[orderLocation + '/totalWeight'] = this.totals.weight;
 
 
          if(this.$.customer.value){
@@ -507,35 +525,62 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
            updateOrder[orderLocation + '/includeVAT'] = false;
          };
 
+        //  firebase.database().ref().update(updateOrder);
 
+         // NOTE: OrderRow:
+        //  orderKey, id, name, unit price, vat, quantity, quantity in delivery, commission true/false
+        var updateOrderRow = {};
+        for (var i = 0; i < this.orderContent.length; i++) {
+
+          updateOrderRow['/orderRows/' + this.orderContent[i].rowKey + '/orderKey'] = this.orderKey;
+          updateOrderRow['/orderRows/' + this.orderContent[i].rowKey + '/id'] = this.orderContent[i].id;
+          updateOrderRow['/orderRows/' + this.orderContent[i].rowKey + '/name'] = this.orderContent[i].name;
+          updateOrderRow['/orderRows/' + this.orderContent[i].rowKey + '/price'] = this.orderContent[i].price;
+          updateOrderRow['/orderRows/' + this.orderContent[i].rowKey + '/quantity'] = this.orderContent[i].quantity;
+          updateOrderRow['/orderRows/' + this.orderContent[i].rowKey + '/quantityInDelivery'] = 0;
+          updateOrderRow['/orderRows/' + this.orderContent[i].rowKey + '/vat'] = this.orderContent[i].vat;
+          updateOrderRow['/orderRows/' + this.orderContent[i].rowKey + '/commission'] = this.$.includeVAT.checked;
+
+        }
+        if (this.removedItems != null) {
+          console.log(this.removedItems);
+          for (var i = 0; i < this.removedItems.length; i++) {
+
+            var removedItemsRef = firebase.database().ref('/orderRows/'+this.removedItems[i].rowKey);
+            console.log(this.removedItems[i].rowKey);
+            removedItemsRef.remove()
+              .then(function() {
+
+                console.log("Remove succeeded.")
+              })
+              .catch(function(error) {
+                console.log("Remove failed: " + error.message)
+              });
+          }
+        }
+        this.set('removedItems',[]);
+        this.set('saved', true);
         //  if(this.$.email.value || this.$.emailInvoice.value ){
         //    if(this.$.email.value){
-        //      updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/contact'] = this.$.email.value;
+        //      updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/contact'] = this.$.email.value;
         //      this.$.email.value="";};
         //    if(this.$.emailInvoice.value){
-        //      updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/invoice'] = this.$.emailInvoice.value;
+        //      updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/invoice'] = this.$.emailInvoice.value;
         //      this.$.emailInvoice.value="";};
         //  };
 
 
 
-        // if(this.$.currency.value){updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = this.$.currency.value;}else
-        // {updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = 'SEK';};
-        // updates['/contacts/'+ this.account.aid + '/' + newContactKey + '/meta'] = {createDate: Date.now(), createUid: this.user.uid };
+        // if(this.$.currency.value){updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = this.$.currency.value;}else
+        // {updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = 'SEK';};
+        // updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/meta'] = {createDate: Date.now(), createUid: this.user.uid };
 
 
 
-        // add individual
-
-        var updateOrderRow = {};
-
-
-
-       this.$.reference.value="";
-       //execute updates
-       firebase.database().ref().update(updateOrder);
-       firebase.database().ref().update(updateOrderRow);
-
+        //execute updateOrder
+        firebase.database().ref().update(updateOrder);
+        firebase.database().ref().update(updateOrderRow);
+        console.log('Saved');
        }
 
 
