@@ -126,8 +126,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <vaadin-grid items='[[orderContent]]' id="orderRows">
           <vaadin-grid-column>
             <template class="header">Product</template>
-            <template>[[item.name]] <br />
-                [[item.id]]
+            <template>
+              <paper-item>
+                  <paper-item-body>
+                    [[item.name]]
+                    <div secondary>[[item.id]]</div>
+                </paper-item-body>
+              </paper-item>
             </template>
 
           </vaadin-grid-column>
@@ -152,7 +157,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <vaadin-grid-column>
             <template class="header">Price</template>
             <template>
-              <input type="text" name="price-[[index]]" value="[[item.displayPrice]]" on-input="_storePrice" readonly$="[[!_isEditing(editing,item)]]"> {{totals.includeExcludeVAT}} [[item.vat]]% VAT.
+
+                <paper-item>
+                    <paper-item-body>
+                      <input type="text" name="price-[[index]]" value="[[item.displayPrice]]" on-input="_storePrice" readonly$="[[!_isEditing(editing,item)]]">
+                      <div secondary>{{totals.includeExcludeVAT}} [[item.vat]]% VAT.</div>
+                  </paper-item-body>
+                </paper-item>
+
               <!-- <paper-locale-input type="text" name="price-[[index]]" value="[[item.displayPrice]]" on-input="_storePrice" readonly$="[[!_isEditing(editing,item)]]" currency="sek" locale="se"></paper-locale-input> {{totals.includeExcludeVAT}} [[item.vat]]% VAT. -->
             </template>
           </vaadin-grid-column>
@@ -173,7 +185,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </template>
           </vaadin-grid-column>
         </vaadin-grid>
-        <strong>Total weight: </strong>{{totals.weight}} kg, <strong> Total price: </strong>{{totals.price}} kr {{totals.includeExcludeVAT}} VAT.
+        <strong>Total weight: </strong>{{totals.weight}} kg <strong> Total price: </strong>{{totals.displayPrice}} kr {{totals.includeExcludeVAT}} VAT.
 
       <!-- list items and variants -->
       <paper-listbox>
@@ -273,7 +285,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value:{
               weight:0,
               price:0,
-              includeExcludeVAT: 'excluding'
+              includeExcludeVAT: 'excl.'
             },
             notify:true
           }
@@ -284,6 +296,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        ready(){
         super.ready();
         this.editing = null;
+
+        var newOrderKey = firebase.database().ref('orders/' + this.account.aid).push().key;
        }
       _isEqualTo(item, variant) {
           // console.log(item);
@@ -307,12 +321,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.orderContent[i].displayPrice = this.orderContent[i].price * (1 + this.orderContent[i].vat/100);
 
           }
-          this.set('totals.includeExcludeVAT','including')
+          this.set('totals.includeExcludeVAT','incl.')
         } else {
           for (var i = 0; i < this.orderContent.length; i++) {
             this.orderContent[i].displayPrice = this.orderContent[i].price;
           }
-          this.set('totals.includeExcludeVAT','excluding')
+          this.set('totals.includeExcludeVAT','excl.')
         }
           this._sumTotals();
           this.$.orderRows.clearCache();
@@ -361,12 +375,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _save(e) {
         var item = e.model.item;
         item.quantity = this._quantity;
-        item.displayPrice = this._price;
+        item.displayPrice = parseInt(this._price);
         if (this.$.includeVAT.checked) {
-          item.price = this._price / (1+item.vat/100);
+          item.price = parseInt(this._price) / (1+item.vat/100);
         }
         else{
-            item.price = this._price;
+            item.price = parseInt(this._price);
         }
         this.editing = null;
 
@@ -416,6 +430,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } else {
             var displayPrice = price;
         }
+        var rowKey = firebase.database().ref('orderRows/' + this.account.aid).push().key;
 
         this.orderContent.unshift({'id':id,'name':name,'price':price,'displayPrice':displayPrice, 'vat':vat, 'quantity':Number(1),'weight':weight});
         this.$.orderRows.clearCache();
@@ -426,6 +441,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _sumTotals(){
         this.totals.weight = 0;
+        this.totals.displayPrice = 0;
         this.totals.price = 0;
         if(this.orderContent.length==0){
           this.set('totals.weight', '0');
@@ -435,8 +451,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           for (var i = 0; i < this.orderContent.length; i++) {
             var quantity = this.orderContent[i].quantity
               this.set('totals.weight', this.totals.weight + (this.orderContent[i].weight/1000) * quantity);
-              this.set('totals.price', this.totals.price + this.orderContent[i].displayPrice * quantity);
-
+              this.set('totals.displayPrice', this.totals.displayPrice + this.orderContent[i].displayPrice * quantity);
+              this.set('totals.price', this.totals.price + this.orderContent[i].price * quantity);
           }
         };
       }
@@ -451,35 +467,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
        add(e) {
 
-         var newOrderKey = firebase.database().ref('orders/' + this.account.aid).push().key;
+
          var orderLocation = '/contacts/'+ this.account.aid + '/' + newContactKey ;
-         var updates  = {};
+         var updateOrder  = {};
 
          // Prepare
          // NOTE:order number, _customer, date, _order number, _reference, _note, _comissioner true/false, _creator id, _creator name, _create timestamp, include VAT, total value, total weight,
-
+         // orderNumber still missing.
          // NOTE: OrderRow:
         //  orderKey, id, name, unit price, vat, quantity, quantity in delivery, commission true/false
          updates[orderLocation + '/orderNumber'] = "X";
          updates[orderLocation + '/creatorId'] = this.user.uid;
          updates[orderLocation + '/creatorName'] = this.user.name;
          updates[orderLocation + '/createTimestamp'] = Date.now();
+         updates[orderLocation + '/totalValue'] = this.totals.price;
+         updates[orderLocation + '/totalWeight'] = this.totals.weight;
+
 
          if(this.$.customer.value){
-           updates[orderLocation + '/customer'] = this.$.customer.value;
+           updateOrder[orderLocation + '/customer'] = this.$.customer.value;
            };
          if(this.$.customerOrderNr.value){
-           updates[orderLocation + '/customerOrderNr'] = this.$.customerOrderNr.value;
-           this.$.customerOrderNr.value="";};
+           updateOrder[orderLocation + '/customerOrderNr'] = this.$.customerOrderNr.value;
+           };
          if(this.$.reference.value){
-           updates[orderLocation + '/reference'] = this.$.reference.value;
-           this.$.reference.value="";};
+           updateOrder[orderLocation + '/reference'] = this.$.reference.value;
+           };
          if(this.$.note.value){
-           updates[orderLocation + '/note'] = this.$.note.value;
-           this.$.note.value="";};
-         if(this.$.commission.selectedItem.value){
-           updates[orderLocation + '/commission'] = this.$.commission.selectedItem.value;
-           this.$.commission.selectedItem.value="false";};
+           updateOrder[orderLocation + '/note'] = this.$.note.value;
+           };
+         if(this.$.commission.checked){
+           updateOrder[orderLocation + '/commission'] = true;
+         } else{
+           updateOrder[orderLocation + '/commission'] = false;
+         };
+         if(this.$.includeVAT.checked){
+           updateOrder[orderLocation + '/includeVAT'] = true;
+         } else{
+           updateOrder[orderLocation + '/includeVAT'] = false;
+         };
+
 
         //  if(this.$.email.value || this.$.emailInvoice.value ){
         //    if(this.$.email.value){
@@ -499,15 +526,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
         // add individual
-        var newPersonKey = firebase.database().ref('contacts/' + this.account.aid + '/' + newContactKey + '/people').push().key;
-        var updateIndividual = {};
+
+        var updateOrderRow = {};
 
 
 
        this.$.reference.value="";
        //execute updates
-       firebase.database().ref().update(updates);
-       firebase.database().ref().update(updateIndividual);
+       firebase.database().ref().update(updateOrder);
+       firebase.database().ref().update(updateOrderRow);
 
        }
 
