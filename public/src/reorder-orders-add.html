@@ -472,10 +472,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _remove(e) {
           var index = this.orderContent.indexOf(e.model.item);
-            console.log(this.orderContent.indexOf(e.model.item));
-            //NOTE: Jag lyckas inte hämta RowKey.... 
+            console.log(e.model.item.rowKey);
+            //NOTE: Jag lyckas inte hämta RowKey....
           if (this.saved) {
-            this.removedItems.push({'rowKey':this.orderContent.rowKey});
+            this.removedItems.push({'rowKey':e.model.item.rowKey});
           }
           this.orderContent.splice(index, 1);
 
