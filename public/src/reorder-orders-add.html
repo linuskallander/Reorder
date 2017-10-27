@@ -25,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <!-- <link rel="import" href="../bower_components/paper-locale-input/paper-locale-input.html"> -->
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-column.html">
@@ -35,6 +36,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 
 <link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
 
 <script src="../bower_components/intl/dist/Intl.js"></script>
 <script src="../bower_components/intl/locale-data/jsonp/en.js"></script>
@@ -237,8 +239,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
       <div class="card-actions">
         <paper-button id="save" on-tap="saveOrder">Save</paper-button>
-        <a href="[[rootPath]]#/orders" tabindex="-1"><paper-button>Cancel</paper-button></a>
+        <a href="[[rootPath]]#/orders" tabindex="-1"><paper-button>Go back</paper-button></a>
       </div>
+
 
     </paper-card>
   </template>
@@ -472,8 +475,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _remove(e) {
           var index = this.orderContent.indexOf(e.model.item);
-            console.log(e.model.item.rowKey);
-            //NOTE: Jag lyckas inte hämta RowKey....
           if (this.saved) {
             this.removedItems.push({'rowKey':e.model.item.rowKey});
           }
@@ -543,11 +544,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         }
         if (this.removedItems != null) {
-          console.log(this.removedItems);
-          for (var i = 0; i < this.removedItems.length; i++) {
 
+          for (var i = 0; i < this.removedItems.length; i++) {
             var removedItemsRef = firebase.database().ref('/orderRows/'+this.removedItems[i].rowKey);
-            console.log(this.removedItems[i].rowKey);
             removedItemsRef.remove()
               .then(function() {
 
@@ -560,33 +559,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         this.set('removedItems',[]);
         this.set('saved', true);
-        //  if(this.$.email.value || this.$.emailInvoice.value ){
-        //    if(this.$.email.value){
-        //      updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/contact'] = this.$.email.value;
-        //      this.$.email.value="";};
-        //    if(this.$.emailInvoice.value){
-        //      updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/email/invoice'] = this.$.emailInvoice.value;
-        //      this.$.emailInvoice.value="";};
-        //  };
 
 
-
-        // if(this.$.currency.value){updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = this.$.currency.value;}else
-        // {updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/currency'] = 'SEK';};
-        // updateOrder['/contacts/'+ this.account.aid + '/' + newContactKey + '/meta'] = {createDate: Date.now(), createUid: this.user.uid };
-
-
-
-        //execute updateOrder
+        //execute updates
         firebase.database().ref().update(updateOrder);
         firebase.database().ref().update(updateOrderRow);
-        console.log('Saved');
+        // this.$.toast.open();
+        document.getElementById('toastOrderSaved').show();
        }
 
 
      }
 
-     // Register the x-custom element with the browser
+     // Register element with the browser
      customElements.define(ReorderOrdersAdd.is, ReorderOrdersAdd);
   </script>
 

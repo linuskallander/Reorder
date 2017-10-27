@@ -16,7 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
     <title>Re:order</title>
-    <meta name="description" content="My App description">
+    <meta name="description" content="Get your orders organized">
 
     <!--
       The `<base>` tag below is present to support two advanced deployment options:
@@ -90,6 +90,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- Load your application shell -->
     <link rel="import" href="src/reorder-app.html">
+    <link rel="import" href="bower_components/paper-toast/paper-toast.html">
 
     <!-- Add any global styles for body, document, etc. -->
     <style>
@@ -104,6 +105,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </head>
   <body>
     <reorder-app></reorder-app>
+
+    <paper-toast id="toastOrderSaved" text="Order saved"></paper-toast>
     <noscript>
       Please enable JavaScript to view this website.
     </noscript>
