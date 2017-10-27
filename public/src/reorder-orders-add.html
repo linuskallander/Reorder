@@ -30,6 +30,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-column.html">
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-sorter.html">
+<link rel="import" href="../bower_components/vaadin-form-layout/vaadin-form-layout.html">
 <link rel="import" href="../bower_components/app-datepicker/app-datepicker.html">
 <link rel="import" href="../bower_components/app-datepicker/app-datepicker-dialog.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
@@ -100,7 +101,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </firebase-query>
     <paper-card heading="Order details">
       <div id="order" hidden$="{{!user}}" class="card-content">
-
+        <vaadin-form-layout>
         <paper-dropdown-menu label="Customer" id="customer">
           <paper-listbox slot="dropdown-content" selected="0" value="{{selectedSeller}}">
             <template is="dom-repeat" items="{{data}}" as="contact">
@@ -131,9 +132,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-input id="reference" label="Reference"></paper-input>
         <paper-input id="note" label="Note"></paper-input>
 
-        Order from commissioner <paper-toggle-button id="commission"></paper-toggle-button>
+         <paper-toggle-button id="commission">Order from commissioner</paper-toggle-button>
+        </vaadin-form-layout>
+        </div>
+
+      </paper-card>
+      &nbsp;
+      <paper-card heading="Order content">
+
+          <div id="orderContent" hidden$="{{!user}}" class="card-content">
         <div>
-          Display prices with VAT included <paper-toggle-button id="includeVAT" on-change="_VATChange"></paper-toggle-button>
+           <paper-toggle-button id="includeVAT" on-change="_VATChange">Display prices with VAT included</paper-toggle-button>
         </div>
 
         <vaadin-grid items='[[orderContent]]' id="orderRows">
@@ -246,12 +255,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </template>
           </template>
         </paper-listbox>
+      </div>
+    </paper-card>
+    &nbsp;
+    <paper-card heading="Actions">
 
-      </div>
-      <div class="card-actions">
-        <paper-button id="save" on-tap="saveOrder">Save</paper-button>
-        <a href="[[rootPath]]#/orders" tabindex="-1"><paper-button>Go back</paper-button></a>
-      </div>
+      <!-- <div id="orderContent" hidden$="{{!user}}" class="card-content"> -->
+        <div class="card-actions">
+          <paper-button id="save" on-tap="saveOrder">Save</paper-button>
+          <a href="[[rootPath]]#/orders" tabindex="-1"><paper-button>Go back</paper-button></a>
+        </div>
 
 
     </paper-card>
