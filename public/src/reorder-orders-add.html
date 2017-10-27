@@ -111,11 +111,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </paper-listbox>
         </paper-dropdown-menu>
         <br>
-        <paper-card id="datepicker">
-        <app-datepicker
-          first-day-of-week="1"
-          locale="sv"
-          class="light-theme"></app-datepicker></paper-card>
+
+          <div style="display: flex">
+            <paper-input value="[[dynamicDate]]" label="Order date" on-tap="_openDialog"><iron-icon slot="prefix" icon="event"></iron-icon>
+            </paper-input>
+            <!-- <paper-icon-button icon="event" on-tap="_openDialog">Select order date</paper-icon-button> -->
+
+            <app-datepicker-dialog id="datepicker"
+            theme="light-theme"
+            view="{{view}}"
+            first-day-of-week="1"
+            format="[[format]]"
+            date="{{dynamicDate}}"
+            locale="sv"
+            disable-days="[]"></app-datepicker-dialog>
+          </div>
+
         <paper-input id="customerOrderNr" label="Customers order number"></paper-input>
         <paper-input id="reference" label="Reference"></paper-input>
         <paper-input id="note" label="Note"></paper-input>
@@ -327,6 +338,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         }
 
+      _openDialog(e){
+        this.$.datepicker.open();
+      }
+
       _VATChange(e){
         // börja med att spara eventuell rad som redigeras.
 
@@ -501,7 +516,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          updateOrder[orderLocation + '/createTimestamp'] = Date.now();
          updateOrder[orderLocation + '/totalValue'] = this.totals.price;
          updateOrder[orderLocation + '/totalWeight'] = this.totals.weight;
-
+        //  updateOrder[orderLocation + '/date'] = this.$.;
 
          if(this.$.customer.value){
            updateOrder[orderLocation + '/customer'] = this.$.customer.value;

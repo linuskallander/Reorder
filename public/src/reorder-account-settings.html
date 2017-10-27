@@ -136,12 +136,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          var userName = this.user.displayName;
          var companyName = this.$.setCompanyName.value;
 
+         var getLocale = window.Intl.DateTimeFormat().resolvedOptions().locale || 'en-US';
+          getLocale = 'en-US-posix' ? 'en-US' : getLocale;
+
          var updates = {};
            updates['/users/' + userId + '/accounts/' + newGroupKey] = companyName;
            firebase.database().ref().update(updates);
            // for some reason these updates can't be done in the same action.
          var updates = {};
            updates['/accounts/' + newGroupKey + '/name'] = companyName;
+           updates['/accounts/' + newGroupKey + '/locale'] = getLocale;
 
            updates['/accounts/' + newGroupKey + '/members/' + userId + '/name'] = userName;
            updates['/accounts/' + newGroupKey + '/members/' + userId + '/joined'] = Date.now();
