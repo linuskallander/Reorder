@@ -1,0 +1,47 @@
+{
+  "name": "paper-locale-input",
+  "description": "input component for localized data (e.g. currency)",
+  "main": "paper-locale-import.html",
+  "version": "0.8.0",
+  "authors": [
+    "christophe geiser"
+  ],
+  "license": "https://github.com/PolymerEl/paper-locale-input/LICENSE",
+  "repository": {
+    "url": "https://github.com/PolymerEl/paper-locale-input"
+  },
+  "keywords": [
+    "web-components",
+    "polymer",
+    "material-design",
+    "paper-input",
+    "input",
+    "money",
+    "form",
+    "currency",
+    "Intl",
+    "locales"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.4.0",
+    "paper-input": "PolymerElements/paper-input#^1.1.14",
+    "paper-button": "PolymerElements/paper-button#^1.0.14"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "homepage": "https://github.com/PolymerEl/paper-locale-input",
+  "_release": "0.8.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.0",
+    "commit": "13e19bd949ad1fdec95e8e93b0959f8f6356374e"
+  },
+  "_source": "https://github.com/PolymerEl/paper-locale-input.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerEl/paper-locale-input",
+  "_direct": true
+}

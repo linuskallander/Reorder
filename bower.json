@@ -37,12 +37,19 @@
     "web-component-tester": "Polymer/web-component-tester#^6.0.0",
     "whenever.js": "~0.0.1",
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
-    "vaadin-form-layout": "vaadin/vaadin-form-layout#^1.0.4"
+    "vaadin-form-layout": "vaadin/vaadin-form-layout#^1.0.4",
+    "paper-locale-input": "PolymerEl/paper-locale-input#^0.8.0"
   },
   "resolutions": {
     "paper-checkbox": "^2.0.1",
     "paper-icon-button": "^2.0.1",
-    "polymer": "1.9 - 2",
-    "webcomponentsjs": "^v1.0.2"
+    "polymer": "^2.2.0",
+    "webcomponentsjs": "^v1.0.2",
+    "iron-flex-layout": "2.0.0",
+    "iron-a11y-keys-behavior": "1 - 2",
+    "iron-a11y-announcer": "1 - 2",
+    "paper-material": "^2.0.0",
+    "paper-button": "^2.0.0",
+    "paper-input": "^2.0.2"
   }
 }

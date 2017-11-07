@@ -1,0 +1,169 @@
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-input-behavior.html">
+<link rel="import" href="../paper-input/paper-input-error.html">
+<link rel="import" href="paper-locale-behavior.html">
+<!--
+`paper-locale-input` is an input element for dealing with locale data
+
+@demo demo/index.html
+-->
+<dom-module id="paper-locale-input">
+  <template>
+    <style >
+    :host {
+      display: block;
+    }
+
+    :host #input {
+      display: none;
+     }
+
+    :host:not([support-locale]) #localeInput {
+      display: none;
+    }
+
+    .prefix {
+      padding-right: 10px;
+    }
+
+    paper-input {
+      width: var(--paper-locale-input-width);
+    }
+    </style>
+    <!-- a paper-input used as fallback when toLocaleString is not supported -->
+    <paper-input
+        id="input"
+        label="[[label]]"
+        value="{{value}}"
+        type="number"
+        no-label-float="[[noLabelFloat]]"
+        invalid="{{invalid}}"
+        required="[[required]]"
+        name="[[name]]"
+        disabled="[[disabled]]"
+        readonly="[[readonly]]"
+        always-float-label="[[alwaysFloatLabel]]"
+        min="[[min]]"
+        max="[[max]]"
+        step="[[step]]"
+        auto-validate
+        error-message="[[errorMessage]]"
+        placeholder="[[placeholder]]"
+        >
+        <div prefix class="prefix">[[currency]]</div>
+      </paper-input>
+      <paper-input
+        id="localeInput"
+        label="[[label]]"
+        no-label-float="[[noLabelFloat]]"
+        value="{{_inputValue}}"
+        name="[[name]]"
+        disabled="[[disabled]]"
+        readonly="[[readonly]]"
+        always-float-label="[[alwaysFloatLabel]]"
+        error-message="[[errorMessage]]"
+        invalid="[[invalid]]"
+        placeholder="[[placeholder]]"
+        >
+        </paper-input>
+    </template>
+    <script>
+
+    Polymer({
+
+      is: 'paper-locale-input',
+
+      behaviors: [
+        Polymer.PaperInputBehavior,
+        Polymer.behaviors.PaperLocaleInputBehavior
+      ],
+
+      properties: {
+
+        /**
+         * `_inputValue` value bound to paper-input
+         */
+        _inputValue: {
+          type: String,
+          observer: '_onInputValueChanged'
+        },
+
+        /**
+         * The error message to display when the input is invalid. If you're using
+         * PaperInputBehavior to implement your own paper-input-like element,
+         * bind this to the `<paper-input-error>`'s content, if using.
+         */
+        errorMessage: {
+          type: String,
+          value: 'invalid field'
+        },
+
+        /**
+         * `value` value to bound to
+         */
+        value: {
+          type: Number,
+          notify: true,
+          observer: '_valueChange'
+        },
+
+
+      },
+
+      observers: [],
+
+     /**
+      * Forward focus to inputElement. Overriden from IronControlState.
+      * @override - otherwise  stackoverflow on blur...
+      */
+      _focusBlurHandler: function() {
+
+      },
+
+      _onInputValueChanged: function(value) {
+        // console.info('_onInputValueChanged', value);
+        if (this._valueIsChanging || !this.supportLocale) {
+          return;
+        }
+        var oldValue = this.value;
+        value = value.replace(/[^\d]*/g, '');
+        this.value = value.length ? value * Math.pow(10, -this.minimumFractionDigits) : '' ;
+
+        // we need to call _valueChange again for the case where we would have invalid input (e.g. characters)
+        if (oldValue === this.value) {
+          this._valueChange(this.value, oldValue);
+        }
+
+      },
+
+     /**
+      * `valueChange`
+      * @override
+      */
+      _valueChange: function(value, old) {
+
+        if(!this.supportLocale || value === undefined) {
+          return;
+        }
+
+        if(value === '') {
+          return this._inputValue = '';
+        }
+
+        var num = this.value * 1;
+
+        if (isNaN(num)) {
+          return this.value = old;
+        }
+
+        this._valueIsChanging = true;
+        this._inputValue = this.getFormatedValue(num);
+        this._valueIsChanging = false;
+
+      }
+
+    });
+  </script>
+</dom-module>

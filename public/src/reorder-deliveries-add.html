@@ -27,7 +27,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-locale-input/paper-locale-input.html">
-<link rel="import" href="../bower_components/paper-locale-input/paper-locale.html">
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-column.html">
 <link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-sorter.html">
@@ -45,7 +44,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <script src="../bower_components/intl/locale-data/jsonp/sv.js"></script>
 <!-- <link rel="import" href="../bower_components/address-autocomplete/address-autocomplete.html"> -->
 
-<dom-module id="reorder-orders-add">
+<dom-module id="reorder-deliveries-add">
   <template>
     <style>
       :host {
@@ -82,17 +81,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <firebase-auth user="{{user}}" ></firebase-auth>
       <firebase-query
         id="query"
-        path="/contacts/{{account.aid}}"
+        path="/orders/{{account.aid}}"
         data="{{data}}">
         </firebase-query>
+
       <firebase-query
         id="query"
-        path="/inventory/{{account.aid}}"
-        data="{{inventoryData}}">
-        </firebase-query>
-      <firebase-query
-        id="query"
-        path="/itemVariants/{{account.aid}}"
+        path="/orderRows/{{account.aid}}"
         data="{{inventoryVariants}}">
         </firebase-query>
     <paper-card heading="Order details">
@@ -110,7 +105,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <br>
 
           <div style="display: flex">
-            <paper-input id="orderDate" value="[[dynamicDate]]" label="Order date" on-tap="_openDialog"><iron-icon slot="prefix" icon="event"></iron-icon>
+            <paper-input value="[[dynamicDate]]" label="Order date" on-tap="_openDialog"><iron-icon slot="prefix" icon="event"></iron-icon>
             </paper-input>
             <!-- <paper-icon-button icon="event" on-tap="_openDialog">Select order date</paper-icon-button> -->
 
@@ -204,8 +199,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </template>
           </vaadin-grid-column>
         </vaadin-grid>
-        <!-- TODO: get locale from account settings -->
-        <strong>Total weight: </strong><paper-locale value="{{totals.weight}}" formatingStyle="decimal" formating-style="decimal" locale="sv-SE"></paper-locale> kg <strong> Total price: </strong><paper-locale value="{{totals.displayPrice}}" currency="sek" locale="se-SV"></paper-locale> {{totals.includeExcludeVAT}} VAT.
+        <strong>Total weight: </strong>{{totals.weight}} kg <strong> Total price: </strong>{{totals.displayPrice}} kr {{totals.includeExcludeVAT}} VAT.
 
       <!-- list items and variants -->
       <paper-listbox>
@@ -261,7 +255,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <!-- <div id="orderContent" hidden$="{{!user}}" class="card-content"> -->
         <div class="card-actions">
           <paper-button id="save" on-tap="saveOrder">Save</paper-button>
-          <!-- TODO: When leaving form it should be emptied? -->
           <a href="[[rootPath]]#/orders" tabindex="-1"><paper-button>Go back</paper-button></a>
         </div>
 
@@ -273,9 +266,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     // Define the element's API using an ES2015 class
-     class ReorderOrdersAdd extends Polymer.Element {
+     class ReorderDeliveriesAdd extends Polymer.Element {
 
-       static get is() { return 'reorder-orders-add'; }
+       static get is() { return 'reorder-deliveries-add'; }
 
        // Declare properties for the element's public API
        static get properties() {
@@ -311,8 +304,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value:{
               weight:0,
               price:0,
-              includeExcludeVAT: 'excl.',
-              items:0
+              includeExcludeVAT: 'excl.'
             },
             notify:true
           },
@@ -390,7 +382,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         else{
           console.log("cannot remove items below 1. Remove instead.");
-          // TODO: Make this message a toast
         }
 
         this._sumTotals();
@@ -446,8 +437,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       addToBasket(e){
-
-
         if(e.model.item.hasVariants){
           var id = e.model.itemVar.id;
           var name = e.model.itemVar.name;
@@ -486,16 +475,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
       _sumTotals(){
-        this.set('totals.weight', 0);
-        this.set('totals.price', 0);
-        this.set('totals.items', 0);
-        this.set('totals.displayPrice', 0);
-
+        this.totals.weight = 0;
+        this.totals.displayPrice = 0;
+        this.totals.price = 0;
         if(this.orderContent.length==0){
           this.set('totals.weight', '0');
           this.set('totals.price', '0');
-          this.set('totals.items', '0');
-          this.set('totals.displayPrice', '0');
         }
         else {
           for (var i = 0; i < this.orderContent.length; i++) {
@@ -503,7 +488,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.set('totals.weight', Math.round((this.totals.weight + (this.orderContent[i].weight/1000) * quantity)*100)/100);
               this.set('totals.displayPrice', this.totals.displayPrice + this.orderContent[i].displayPrice * quantity);
               this.set('totals.price', this.totals.price + this.orderContent[i].price * quantity);
-              this.set('totals.items', this.totals.items + quantity);
 
           }
         };
@@ -529,29 +513,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          var updateOrder  = {};
 
          // Prepare
-          // TODO:orderNumber still missing.
+         // NOTE:order number, _customer, date, _order number, _reference, _note, _comissioner true/false, _creator id, _creator name, _create timestamp, include VAT, total value, total weight,
+         // orderNumber still missing.
          updateOrder[orderLocation + '/orderNumber'] = "X";
          updateOrder[orderLocation + '/creatorId'] = this.user.uid;
          updateOrder[orderLocation + '/creatorName'] = this.user.displayName;
          updateOrder[orderLocation + '/createTimestamp'] = Date.now();
          updateOrder[orderLocation + '/totalValue'] = this.totals.price;
          updateOrder[orderLocation + '/totalWeight'] = this.totals.weight;
-         updateOrder[orderLocation + '/delevered'] = false;
-         updateOrder[orderLocation + '/itemsRemaining'] = this.totals.items;
-         updateOrder[orderLocation + '/itemsTotal'] = this.totals.items;
-         updateOrder[orderLocation + '/orderDate'] = this.$.orderDate.value;
+        //  updateOrder[orderLocation + '/date'] = this.$.;
 
          if(this.$.customer.value){
-           updateOrder[orderLocation + '/customerName'] = this.$.customer.value;
-           for (var i = 0; i < this.data.length; i++) {
-             if (this.data[i].name.displayName == this.$.customer.value) {
-               var customerId = this.data[i].$key;
-               // console.log(this.data[i].name.displayName);
-             }
-             // console.log(this.$.customer.value);
-           }
-
-           updateOrder[orderLocation + '/customerId'] = customerId;
+           updateOrder[orderLocation + '/customer'] = this.$.customer.value;
            };
          if(this.$.customerOrderNr.value){
            updateOrder[orderLocation + '/customerOrderNr'] = this.$.customerOrderNr.value;
@@ -619,7 +592,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      }
 
      // Register element with the browser
-     customElements.define(ReorderOrdersAdd.is, ReorderOrdersAdd);
+     customElements.define(ReorderDeliveriesAdd.is, ReorderDeliveriesAdd);
   </script>
 
 </dom-module>

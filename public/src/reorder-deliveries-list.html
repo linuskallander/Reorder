@@ -20,7 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 
-<dom-module id="reorder-orders-list">
+<dom-module id="reorder-deliveries-list">
   <template>
     <style>
       :host {
@@ -43,11 +43,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </style>
 
-    <paper-card heading="Orders">
+    <paper-card heading="Deliveries">
       <firebase-auth user="{{user}}" ></firebase-auth>
       <firebase-query
         id="query"
-        path="/orders/[[account.aid]]"
+        path="/deliveries/[[account.aid]]"
         data="{{data}}">
         </firebase-query>
       <div id="orders" hidden$="[[!user]]" class="card-content">
@@ -55,15 +55,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <ul>
               <template is="dom-repeat" items="{{data}}" as="item">
 
-                  <li>[[item.customerName]]</li>
+                  <li>[[item.customer]]</li>
 
               </template>
             </ul>
         </div>
       </div>
       <div class="card-actions">
-      <a href="[[rootPath]]#/orders/add" tabindex="-1"><paper-button>New order</paper-button></a>
-      </div>
+      <a href="[[rootPath]]#/deliveries/add" tabindex="-1"><paper-button>New delivery</paper-button></a>
     </paper-card>
   </template>
 
@@ -71,9 +70,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     // Define the element's API using an ES2015 class
-     class ReorderOrdersList extends Polymer.Element {
+     class ReorderOrdersDeliveriesList extends Polymer.Element {
 
-       static get is() { return 'reorder-orders-list'; }
+       static get is() { return 'reorder-deliveries-list'; }
 
        // Declare properties for the element's public API
        static get properties() {
@@ -118,7 +117,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      }
 
      // Register the x-custom element with the browser
-     customElements.define(ReorderOrdersList.is, ReorderOrdersList);
+     customElements.define(ReorderOrdersDeliveriesList.is, ReorderOrdersDeliveriesList);
   </script>
 
 </dom-module>

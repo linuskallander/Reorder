@@ -33,6 +33,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="lazy-import" href="reorder-view1.html">
 <link rel="lazy-import" href="reorder-view2.html">
 <link rel="lazy-import" href="reorder-orders.html">
+<link rel="lazy-import" href="reorder-deliveries.html">
 <link rel="lazy-import" href="reorder-contacts.html">
 <link rel="lazy-import" href="reorder-inventory.html">
 <link rel="lazy-import" href="reorder-settings.html">
@@ -86,7 +87,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       id="firebase"
       auth-domain="reorder-cf94c.firebaseapp.com"
       database-url="https://reorder-cf94c.firebaseio.com"
-      api-key="AIzaSyDbQef57EWMzX-99iBGhH7zWTGqg2s_xDA"
+      api-key="AIzaSyCPSscXEPcDOPPeRpEYgJw5zpd3BtampFQ"
       >
     </firebase-app>
     <firebase-auth user="{{user}}" ></firebase-auth>
@@ -107,6 +108,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <a name="view1" href="[[rootPath]]#/view1">Dashboard</a>
           <a name="view2" href="[[rootPath]]#/view2">View Two</a>
           <a name="orders" href="[[rootPath]]#/orders">Orders</a>
+          <a name="deliveries" href="[[rootPath]]#/deliveries">Deliveries</a>
           <a name="contacts" href="[[rootPath]]#/contacts">Contacts</a>
           <a name="inventory" href="[[rootPath]]#/inventory">Inventory</a>
           <a name="settings" href="[[rootPath]]#/settings">Settings</a>
@@ -133,6 +135,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <reorder-view1 name="view1" account="{{activeAccount}}"></reorder-view1>
           <reorder-view2 name="view2"></reorder-view2>
           <reorder-orders name=orders account="{{activeAccount}}" route="{{subroute}}"></reorder-orders>
+          <reorder-deliveries name=deliveries account="{{activeAccount}}" route="{{subroute}}"></reorder-deliveries>
           <reorder-contacts name=contacts account="{{activeAccount}}"></reorder-contacts>
           <reorder-inventory name=inventory account="{{activeAccount}}"></reorder-inventory>
           <reorder-settings name="settings" account="{{activeAccount}}"></reorder-settings>
