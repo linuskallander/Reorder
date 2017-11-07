@@ -16,6 +16,9 @@
     "src/reorder-orders.html",
     "src/reorder-orders-add.html",
     "src/reorder-orders-list.html",
+    "src/reorder-deliveries.html",
+    "src/reorder-deliveries-add.html",
+    "src/reorder-deliveries-list.html",
 
     "src/reorder-contacts.html",
     "src/reorder-contacts-add.html",

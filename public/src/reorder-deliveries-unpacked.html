@@ -1,0 +1,177 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+
+<dom-module id="reorder-deliveries-unpacked">
+  <template>
+    <style>
+      :host {
+      display: none;
+      }
+      :host([active]) {
+        display: block;
+        padding: 10px;
+      }
+      paper-card {
+        width: 100%;
+      }
+      a paper-button,
+      a:active paper-button,
+      a:visited paper-button {
+        color: #000;
+        text-decoration: none;
+      }
+
+
+    </style>
+
+    <paper-card heading="Orders ready for delivery">
+      <firebase-auth user="{{user}}" ></firebase-auth>
+      <firebase-query
+        id="query"
+        path="/orders/[[account.aid]]"
+        order-by-child="delevered"
+        equal-to="false"
+        data="{{data}}">
+        </firebase-query>
+      <div id="orders" hidden$="[[!user]]" class="card-content">
+
+        <div>
+          <paper-listbox>
+              <template is="dom-repeat" items="{{activeOrders}}" as="customer">
+
+                  <paper-item>
+                      <paper-item-body two-line>
+                        <DIV>
+                          [[customer.customerName]]
+                          <iron-icon slot="right" icon="icons:add"></iron-icon>
+
+                        </DIV>
+                        <div secondary>
+                          [[customer.totalOrders]] orders with a total of [[customer.totalItems]] items remain undelivered.
+                        </div>
+                      </paper-item-body>
+                    </paper-item>
+
+
+              </template>
+            </paper-listbox>
+        </div>
+      </div>
+
+
+    </paper-card>
+  </template>
+
+  <script>
+
+
+    // Define the element's API using an ES2015 class
+     class ReorderDeliveriesUnpacked extends Polymer.Element {
+
+       static get is() { return 'reorder-deliveries-unpacked'; }
+
+       // Declare properties for the element's public API
+       static get properties() {
+         return {
+          data: {
+             type: Object
+           },
+           user: {
+             type: Object,
+             observer: '_userChanged',
+             notify: true
+           },
+           account:{
+               type: Object,
+               notify: true,
+               observer: '_accountChangede',
+             },
+
+           active: {
+             type: Boolean,
+             value: false,
+             reflectToAttribute: true
+           },
+           activeOrders: {
+             type: Array,
+             value:[]
+
+           },
+           data:{
+             type: Array,
+             observer: '_itemChanged',
+           }
+
+         }
+       }
+
+       ready(){
+        super.ready();
+
+       }
+       _userChanged(){
+     }
+
+      _itemChanged(account) {
+        if(this.account.aid!=""){
+          //Filter unique customers
+          this.set('activeOrders', [])
+           var activeNames = this.data.map(item => item.customerName)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            var x;
+            for (x in activeNames){
+                var totalOrders = 0;
+                var totalItems = 0;
+                var customerId = "";
+
+                for (var i = 0; i < this.data.length; i++) {
+
+                    // Loop through orders to accumulate stats. Right now we can't show totalWeight in this view since delivery can be partial.
+                    // TODO: In order-add, also add "remaining weight"
+
+                    if (activeNames[x]==this.data[i].customerName) {
+                      totalOrders +=1;
+                      totalItems += this.data[i].itemsRemaining;
+                      customerId = this.data[i].customerId;
+                    }
+                  }
+                  this.activeOrders.unshift({'customerName':activeNames[x],'customerId':customerId,'totalOrders':totalOrders,'totalItems':totalItems});
+            }
+
+        }
+
+        }
+
+
+
+
+     }
+
+     // Register the x-custom element with the browser
+     customElements.define(ReorderDeliveriesUnpacked.is, ReorderDeliveriesUnpacked);
+  </script>
+
+</dom-module>

@@ -1,0 +1,62 @@
+
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="reorder-deliveries-add.html">
+<link rel="import" href="reorder-deliveries-list.html">
+<link rel="import" href="reorder-deliveries-unpacked.html">
+<!-- <link rel="import" href="reorder-inventory-list.html"> -->
+
+
+<dom-module id="reorder-deliveries">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+
+    <app-route route="{{route}}"
+      pattern="/add"
+      active="{{addActive}}"></app-route>
+
+      // deliveries base view.
+      <reorder-deliveries-unpacked account="{{account}}" active="{{listActive}}"></reorder-deliveries-unpacked>
+      <reorder-deliveries-list account="{{account}}" active="{{listActive}}"></reorder-deliveries-list>
+
+
+      <reorder-deliveries-add account="{{account}}" active="{{addActive}}"></reorder-deliveries-add>
+
+  </template>
+
+  <script>
+    class ReorderDeliveries extends Polymer.Element {
+      static get is() { return 'reorder-deliveries'; }
+      static get properties() {
+        return {
+          account:{
+            type: Object
+          },
+          addActive: {
+            type: Boolean,
+            observer: '_subChanged',
+            notify: true
+          },
+          listActive: {
+            type: Boolean,
+            notify: true
+          },
+        }
+      }
+      _subChanged(){
+        if (this.addActive) {this.set('listActive',false)}else{this.set('listActive',true);}
+      }
+
+    }
+
+    window.customElements.define(ReorderDeliveries.is, ReorderDeliveries);
+  </script>
+</dom-module>
